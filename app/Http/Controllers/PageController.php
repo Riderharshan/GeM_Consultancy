@@ -285,12 +285,15 @@ class PageController extends Controller
             'message' => 'required|string|min:10|max:2000',
         ]);
 
-        Contact::create($validated);
+        $contact = Contact::create($validated);
 
         // Send email notification to admin
-        $contact = Contact::latest()->first();
-        Mail::to(config('mail.admin_address', env('ADMIN_MAIL', 'admin@gemconsultancy.in')))
-            ->send(new ContactFormSubmitted($contact));
+        try {
+            Mail::to(env('ADMIN_MAIL', 'harshan.tn46@gmail.com'))
+                ->send(new ContactFormSubmitted($contact));
+        } catch (\Exception $e) {
+            \Log::error('Contact form mail failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('contact')
             ->with('success', 'Thank you for reaching out! We will get back to you within 24 hours.');
